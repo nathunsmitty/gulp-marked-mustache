@@ -18,33 +18,47 @@ var markedMustache = require('gulp-marked-mustache');
 
 gulp.task('markdown', function () {
   gulp.src('./markdown/*.md')
-    .pipe(markedMustache())
+    .pipe(markedMustache(options))
     .pipe(gulp.dest('./dist'));
 });
 ```
 
-## Options
+## API
 
-### API
+### options
 
 This package uses [marked](https://github.com/chjj/marked), [Mustache.js](https://github.com/janl/mustache.js) and [node-toc](https://github.com/cowboy/node-toc), although with
 slightly different defaults. You can pass through options for most of these components.
 
 #### markdown
 
+_Type:_ `object`
+
 Accepts any valid [marked](https://github.com/chjj/marked) options.
 
 #### partials
+
+_Type:_ `object`
 
 An object containing any [Mustache](http://mustache.github.io/) partials. This correlates with the `partials` parameter in the `Mustache.render()` method. Note that the other two parameters, `template` and `view`, are populated automatically based on the Markdown file's front matter and content.
 
 #### templatePath
 
+_Type:_ `string`
+
 The path to the Mustache templates, including trailing slash. Defaults to `./default/`
 
 #### toc
 
+_Type:_ `object, boolean`
+
 Accepts any valid [node-toc](https://github.com/cowboy/node-toc) options. Set to `false` to globally disable inclusion.
+
+#### updateLinks
+
+_Type:_ `boolean`
+
+Updates relative links to Markdown documents to their HTML equivalent. For example, `<a href="index.md">` would be changed to `<a href="index.html">`, but `<a href="http://www.example.com/index.md">` would not be affected. 
 
 ### Front Matter
 
