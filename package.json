@@ -1,6 +1,6 @@
 {
   "name": "gulp-marked-mustache",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Render markdown in Mustache templates.",
   "main": "index.js",
   "author": "Tim Swalling <Tim.Swalling@sa.gov.au>",
