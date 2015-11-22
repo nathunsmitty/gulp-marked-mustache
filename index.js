@@ -83,6 +83,7 @@ var gulpMarkedMustache = function (options) {
   options.partials = softSet(options.partials, undefined);
   options.templatePath = softSet(options.templatePath, "./templates/");
   options.toc = softSet(options.toc, undefined);
+  options.updateLinks = softSet(options.updateLinks, undefined);
 
   return through.obj(function(file, enc, cb) {
     var data = fm(String(file.contents));
@@ -99,6 +100,24 @@ var gulpMarkedMustache = function (options) {
 
     // Convert markdown to HTML
     view.body = renderMarkdown(data.body);
+
+    // Update the Markdown links to their HTML equivalent
+    if (options.updateLinks !== false) {
+        view.body = view.body.replace(/href=\"(.+?)(\.md)([\?\#].+?)?\"/g, function (match, path, extension, queryFragment) {
+            // If there is no query string or fragment, set the variable
+            // to a zero-length string
+            if (typeof queryFragment === 'undefined') {
+                queryFragment = '';
+            }
+
+            // Only update the link if it includes a protocol
+            if ((/^(\w+\:)?\/\//).test(match)) {
+                return match;
+            } else {
+                return 'href="' + path + '.html' + queryFragment + '"';
+            }
+        });
+    }
 
     // Add a ToC, if required
     if (options.toc !== false) {
