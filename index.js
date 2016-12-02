@@ -102,8 +102,8 @@ var gulpMarkedMustache = function (options) {
           queryFragment = '';
         }
 
-        // Only update the link if it includes a protocol
-        if ((/^(\w+\:)?\/\//).test(match)) {
+        // Don't update the link if it includes a protocol
+        if ((/^(\w+\:)?\/\//).test(path)) {
           return match;
         } else {
           return 'href="' + path + '.html' + queryFragment + '"';
