@@ -4,7 +4,7 @@
   "description": "Render markdown in Mustache templates.",
   "main": "index.js",
   "author": "Tim Swalling <tim@timswalling.com>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "front-matter": "^2.0.0",
     "highlight.js": "^8.9.1",
