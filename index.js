@@ -1,4 +1,3 @@
-/*jshint node:true*/
 'use strict';
 
 // Load Dependencies
@@ -52,8 +51,8 @@ var renderMarkdown = function (markdown, options) {
 
 // Render a Table of Contents. Returns processed HTML and ToC.
 var renderToc = function (html, options) {
-  var data,
-      output = {};
+  var data;
+  var output = {};
 
   // Merge defaults with user options
   options = _.merge({}, tocDefaults, options);
@@ -96,20 +95,20 @@ var gulpMarkedMustache = function (options) {
 
     // Update the Markdown links to their HTML equivalent
     if (options.updateLinks !== false) {
-        view.body = view.body.replace(/href=\"(.+?)(\.md)([\?\#].+?)?\"/g, function (match, path, extension, queryFragment) {
-            // If there is no query string or fragment, set the variable
-            // to a zero-length string
-            if (typeof queryFragment === 'undefined') {
-                queryFragment = '';
-            }
+      view.body = view.body.replace(/href=\"(.+?)(\.md)([\?\#].+?)?\"/g, function (match, path, extension, queryFragment) {
+        // If there is no query string or fragment, set the variable
+        // to a zero-length string
+        if (typeof queryFragment === 'undefined') {
+          queryFragment = '';
+        }
 
-            // Only update the link if it includes a protocol
-            if ((/^(\w+\:)?\/\//).test(match)) {
-                return match;
-            } else {
-                return 'href="' + path + '.html' + queryFragment + '"';
-            }
-        });
+        // Only update the link if it includes a protocol
+        if ((/^(\w+\:)?\/\//).test(match)) {
+          return match;
+        } else {
+          return 'href="' + path + '.html' + queryFragment + '"';
+        }
+      });
     }
 
     // Add a ToC, if required

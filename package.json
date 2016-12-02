@@ -13,5 +13,8 @@
     "mustache": "^2.2.0",
     "through2": "^2.0.0",
     "toc": "^0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.11.1"
   }
 }
