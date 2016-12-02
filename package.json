@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "front-matter": "^2.0.0",
+    "gulp-util": "^3.0.7",
     "highlight.js": "^9.8.0",
     "lodash": "^4.17.2",
     "marked": "^0.3.5",

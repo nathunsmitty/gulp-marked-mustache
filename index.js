@@ -4,6 +4,7 @@
 var _ = require('lodash');
 var fm = require('front-matter');   // Extract data from markdown front-matter
 var fs = require('fs');             // Read files
+var gutil = require('gulp-util');   // Plugin helpers
 var hljs = require('highlight.js'); // Syntax highlighting
 var marked = require('marked');     // Convert Markdown to HTML convert
 var mustache = require('mustache'); // Convert Jade templates to HTML
@@ -70,7 +71,12 @@ var renderToc = function (html, options) {
 };
 
 var loadTemplate = function (template) {
-  return fs.readFileSync(template, 'utf-8');
+  try {
+    return fs.readFileSync(template, 'utf-8');
+  } catch (err) {
+    // Fail silently if we can't load a template, as we'll return an
+    // empty stream and keep processing the other files
+  }
 };
 
 var gulpMarkedMustache = function (options) {
@@ -127,6 +133,12 @@ var gulpMarkedMustache = function (options) {
 
     // Read the template
     template = loadTemplate(options.templatePath + localOptions.template + '.mustache');
+
+    if (!template) {
+      gutil.log('gulp-marked-mustache: unable to locate \'' + localOptions.template + '\' template for \'' + file.relative + '\', skipping...');
+      cb();
+      return;
+    }
 
     // Compile the template
     html = mustache.render(template, view, options.partials);
