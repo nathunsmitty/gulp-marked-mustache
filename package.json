@@ -2,6 +2,12 @@
   "name": "gulp-marked-mustache",
   "version": "0.2.0",
   "description": "Render markdown in Mustache templates.",
+  "keywords": [
+    "gulpplugin",
+    "markdown",
+    "mustache",
+    "static"
+  ],
   "repository": "timswalling/gulp-marked-mustache",
   "main": "index.js",
   "author": "Tim Swalling <tim@timswalling.com>",
