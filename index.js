@@ -2,6 +2,7 @@
 'use strict';
 
 // Load Dependencies
+var _ = require('lodash');
 var fm = require('front-matter');   // Extract data from markdown front-matter
 var fs = require('fs');             // Read files
 var hljs = require('highlight.js'); // Syntax highlighting
@@ -10,37 +11,40 @@ var mustache = require('mustache'); // Convert Jade templates to HTML
 var through = require('through2');  // Wrapper for stream
 var toc = require('toc');           // Generate a ToC, if required
 
-
-// Functions
-
-// Return a variable (if it's defined), or a fallback value (if it's not)
-var softSet = function (variable, fallback) {
-  if (variable !== undefined) {
-    return variable;
-  } else {
-    return fallback;
-  }
-};
-
-// Render markdown. Applies different defaults to standard marked.
-var renderMarkdown = function (markdown, options) {
-  var renderer = new marked.Renderer();
-
-  // Override marked settings so IDs aren't added to headings
-  renderer.heading = function (text, level) {
-    return '<h' + level + '>' + text + '</h' + level + '>\n';
-  };
-
-  // Merge defaults with user options
-  options = softSet(options, {});
-  options.highlight = softSet(options.highlight, function(code, lang) {
+var markdownDefaults = {
+  highlight: function(code, lang) {
     if (typeof lang !== 'undefined') {
       code = hljs.highlight(lang, code).value;
     }
     return code;
-  });
-  options.langPrefix = softSet(options.langPrefix, "hljs ");
-  options.renderer = softSet(options.renderer, renderer);
+  },
+  langPrefix: 'hljs '
+};
+
+var markedMustacheDefaults = {
+  templatePath: './templates/'
+};
+
+var tocDefaults = {
+  headers: /<h(\d)(\s*[^>]*[^>]*)>(?!TL\;DR)([\s\S]+?)<\/h\1>/gi,  // Exlcude headings called 'TL;DR'
+  header: '<h<%= level %><%= attrs %> id="<%= anchor %>"><%= header %></h<%= level %>>',
+  openLI: '<li><a href="#<%= anchor %>"><%= text %></a>',
+  openUL: '<ul>',
+  TOC: '<%= toc %>',
+  tocMax: 3
+};
+
+// Render markdown. Applies different defaults to standard marked.
+var renderMarkdown = function (markdown, options) {
+  // Merge defaults with user options
+  options = _.merge({}, markdownDefaults, options);
+
+  options.renderer = new marked.Renderer();
+
+  // Override marked settings so IDs aren't added to headings
+  options.renderer.heading = function (text, level) {
+    return '<h' + level + '>' + text + '</h' + level + '>\n';
+  };
 
   // Return the processed markdown
   return marked(markdown, options);
@@ -50,14 +54,9 @@ var renderMarkdown = function (markdown, options) {
 var renderToc = function (html, options) {
   var data,
       output = {};
+
   // Merge defaults with user options
-  options = softSet(options, {});
-  options.headers = softSet(options.headers, /<h(\d)(\s*[^>]*[^>]*)>(?!TL\;DR)([\s\S]+?)<\/h\1>/gi);  // Exlcude headings called 'TL;DR'
-  options.header = softSet(options.header, '<h<%= level %><%= attrs %> id="<%= anchor %>"><%= header %></h<%= level %>>');
-  options.openLI = softSet(options.openLI, '<li><a href="#<%= anchor %>"><%= text %></a>');
-  options.openUL = softSet(options.openUL, '<ul>');
-  options.TOC = softSet(options.TOC, '<%= toc %>');
-  options.tocMax = softSet(options.tocMax, 3);
+  options = _.merge({}, tocDefaults, options);
 
   // Analyse the HMTL and generate ToC data
   data = toc.anchorize(html, options);
@@ -77,13 +76,7 @@ var loadTemplate = function (template) {
 
 var gulpMarkedMustache = function (options) {
   // Initialise options
-
-  options = softSet(options, {});
-  options.markdown = softSet(options.markdown, undefined);
-  options.partials = softSet(options.partials, undefined);
-  options.templatePath = softSet(options.templatePath, "./templates/");
-  options.toc = softSet(options.toc, undefined);
-  options.updateLinks = softSet(options.updateLinks, undefined);
+  options = _.merge({}, markedMustacheDefaults, options);
 
   return through.obj(function(file, enc, cb) {
     var data = fm(String(file.contents));
@@ -95,8 +88,8 @@ var gulpMarkedMustache = function (options) {
     var view = data.attributes; // Set view data to that in file's front-matter
 
     // Set special local options from front matter
-    localOptions.template = softSet(data.attributes.template, 'default');
-    localOptions.toc = softSet(data.attributes.toc, true);
+    localOptions.template = _.get(data, 'attributes.template', 'default');
+    localOptions.toc = _.get(data, 'attributes.toc', true);
 
     // Convert markdown to HTML
     view.body = renderMarkdown(data.body);
