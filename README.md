@@ -73,6 +73,7 @@ The two exception are `body` and `toc`. The former contains the rendered HTML of
 At its simplest, your template may look something like this:
 
 ```html
+<!DOCTYPE html>
 <html>
 
     <head>

@@ -2,15 +2,27 @@
   "name": "gulp-marked-mustache",
   "version": "0.2.0",
   "description": "Render markdown in Mustache templates.",
+  "keywords": [
+    "gulpplugin",
+    "markdown",
+    "mustache",
+    "static"
+  ],
+  "repository": "timswalling/gulp-marked-mustache",
   "main": "index.js",
-  "author": "Tim Swalling <Tim.Swalling@sa.gov.au>",
-  "license": "ISC",
+  "author": "Tim Swalling <tim@timswalling.com>",
+  "license": "MIT",
   "dependencies": {
     "front-matter": "^2.0.0",
-    "highlight.js": "^8.9.1",
+    "gulp-util": "^3.0.7",
+    "highlight.js": "^9.8.0",
+    "lodash": "^4.17.2",
     "marked": "^0.3.5",
     "mustache": "^2.2.0",
     "through2": "^2.0.0",
     "toc": "^0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.11.1"
   }
 }
