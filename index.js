@@ -8,6 +8,7 @@ var gutil = require('gulp-util');   // Plugin helpers
 var marked = require('marked');     // Convert Markdown to HTML convert
 var mustache = require('mustache'); // Convert Jade templates to HTML
 var path = require('path');
+var replaceExt = require('replace-ext');
 var through = require('through2');  // Wrapper for stream
 var toc = require('toc');           // Generate a ToC, if required
 
@@ -81,15 +82,19 @@ var loadTemplate = function (template) {
 // Process the file
 var processBuffer = function (file, options) {
   var data = fm(String(file.contents));
-  var filePath = (typeof data.attributes.path !== 'undefined')
-    ? file.base + data.attributes.path
-    : file.path.replace(/\.md$/, '.html')
-  ;
+  var filePath;
   var html;
   var localOptions = {}; // Per file options passed through front matter
   var template;               // Mustache template (NOT template path)
   var tocTemp;                // Temporary ToC data, if required
   var view = data.attributes; // Set view data to that in file's front-matter
+
+  if ('path' in file) {
+    filePath = (typeof data.attributes.path !== 'undefined')
+      ? file.base + data.attributes.path
+      : replaceExt(file.path, '.html')
+    ;
+  }
 
   // Set special local options from front matter
   localOptions.template = _.get(data, 'attributes.template', 'default');
@@ -128,8 +133,11 @@ var processBuffer = function (file, options) {
   // Compile the template
   html = mustache.render(template, view, options.partials);
 
-  // Set the path and contents
-  file.path = filePath;
+  // Update the file object
+  if (filePath) {
+    file.path = filePath;
+  }
+
   file.contents = new Buffer(html);
 
   return file;
