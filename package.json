@@ -1,6 +1,6 @@
 {
   "name": "gulp-marked-mustache",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Render markdown in Mustache templates.",
   "keywords": [
     "gulpplugin",
