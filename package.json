@@ -20,7 +20,7 @@
   "dependencies": {
     "front-matter": "^2.0.0",
     "gulp-util": "^3.0.7",
-    "highlight.js": "^9.8.0",
+    "highlight.js": "^8.9.1",
     "lodash": "^4.17.2",
     "marked": "^0.3.5",
     "mustache": "^2.2.0",
