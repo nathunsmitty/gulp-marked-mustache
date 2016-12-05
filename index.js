@@ -24,6 +24,26 @@ var renderMarkdown = function (markdown, options) {
   return marked(markdown, options);
 };
 
+
+// Update links to markdown files with their HTML equivalent
+var updateLinks = function (html) {
+  return html.replace(/href=\"(.+?)(\.md)([\?\#].+?)?\"/g, function (match, path, extension, queryFragment) {
+    // If there is no query string or fragment, set the variable
+    // to a zero-length string
+    if (typeof queryFragment === 'undefined') {
+      queryFragment = '';
+    }
+
+    // Don't update the link if it includes a protocol
+    if ((/^(\w+\:)?\/\//).test(path)) {
+      return match;
+    } else {
+      return 'href="' + path + '.html' + queryFragment + '"';
+    }
+  });
+};
+
+
 // Render a Table of Contents. Returns processed HTML and ToC.
 var renderToc = function (html, options) {
   var data;
@@ -44,6 +64,7 @@ var renderToc = function (html, options) {
   return output;
 };
 
+
 // Load a mustache template
 var loadTemplate = function (template) {
   try {
@@ -53,6 +74,7 @@ var loadTemplate = function (template) {
     // empty stream and keep processing the other files
   }
 };
+
 
 var gulpMarkedMustache = function (options) {
   // Initialise options
@@ -76,20 +98,7 @@ var gulpMarkedMustache = function (options) {
 
     // Update the Markdown links to their HTML equivalent
     if (options.updateLinks !== false) {
-      view.body = view.body.replace(/href=\"(.+?)(\.md)([\?\#].+?)?\"/g, function (match, path, extension, queryFragment) {
-        // If there is no query string or fragment, set the variable
-        // to a zero-length string
-        if (typeof queryFragment === 'undefined') {
-          queryFragment = '';
-        }
-
-        // Don't update the link if it includes a protocol
-        if ((/^(\w+\:)?\/\//).test(path)) {
-          return match;
-        } else {
-          return 'href="' + path + '.html' + queryFragment + '"';
-        }
-      });
+      view.body = updateLinks(view.body);
     }
 
     // Add a ToC, if required
@@ -125,5 +134,6 @@ var gulpMarkedMustache = function (options) {
     cb(null, file);
   });
 };
+
 
 module.exports = gulpMarkedMustache;
