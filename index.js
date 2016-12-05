@@ -2,15 +2,15 @@
 
 // Load Dependencies
 var _ = require('lodash');
-var fm = require('front-matter');   // Extract data from markdown front-matter
-var fs = require('fs');             // Read files
-var gutil = require('gulp-util');   // Plugin helpers
-var marked = require('marked');     // Convert Markdown to HTML convert
-var mustache = require('mustache'); // Convert Jade templates to HTML
+var fm = require('front-matter');
+var fs = require('fs');
+var gutil = require('gulp-util');
+var marked = require('marked');
+var mustache = require('mustache');
 var path = require('path');
 var replaceExt = require('replace-ext');
-var through = require('through2');  // Wrapper for stream
-var toc = require('toc');           // Generate a ToC, if required
+var through = require('through2');
+var toc = require('toc');
 
 var markdownDefaults = require('./defaults/marked');
 var markedMustacheDefaults = require('./defaults');
