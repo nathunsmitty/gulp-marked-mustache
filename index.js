@@ -7,6 +7,7 @@ var fs = require('fs');             // Read files
 var gutil = require('gulp-util');   // Plugin helpers
 var marked = require('marked');     // Convert Markdown to HTML convert
 var mustache = require('mustache'); // Convert Jade templates to HTML
+var path = require('path');
 var through = require('through2');  // Wrapper for stream
 var toc = require('toc');           // Generate a ToC, if required
 
@@ -80,9 +81,12 @@ var loadTemplate = function (template) {
 // Process the file
 var processBuffer = function (file, options) {
   var data = fm(String(file.contents));
+  var filePath = (typeof data.attributes.path !== 'undefined')
+    ? file.base + data.attributes.path
+    : file.path.replace(/\.md$/, '.html')
+  ;
   var html;
   var localOptions = {}; // Per file options passed through front matter
-  var path = (typeof data.attributes.path !== 'undefined') ? file.base + data.attributes.path : file.path.replace(/\.md$/, '.html');
   var template;               // Mustache template (NOT template path)
   var tocTemp;                // Temporary ToC data, if required
   var view = data.attributes; // Set view data to that in file's front-matter
@@ -114,7 +118,7 @@ var processBuffer = function (file, options) {
   }
 
   // Read the template
-  template = loadTemplate(options.templatePath + localOptions.template + '.mustache');
+  template = loadTemplate(path.resolve(options.templatePath, localOptions.template + '.mustache'));
 
   if (!template) {
     gutil.log(PLUGIN_NAME + ': unable to locate \'' + localOptions.template + '\' template for \'' + file.relative + '\', skipping...');
@@ -125,7 +129,7 @@ var processBuffer = function (file, options) {
   html = mustache.render(template, view, options.partials);
 
   // Set the path and contents
-  file.path = path;
+  file.path = filePath;
   file.contents = new Buffer(html);
 
   return file;
