@@ -14,6 +14,7 @@ var markdownDefaults = require('./defaults/marked');
 var markedMustacheDefaults = require('./defaults');
 var tocDefaults = require('./defaults/toc');
 
+var PLUGIN_NAME = 'gulp-marked-mustache';
 
 // Render markdown. Applies different defaults to standard marked.
 var renderMarkdown = function (markdown, options) {
@@ -76,60 +77,75 @@ var loadTemplate = function (template) {
 };
 
 
+// Process the file
+var processBuffer = function (file, options) {
+  var data = fm(String(file.contents));
+  var html;
+  var localOptions = {}; // Per file options passed through front matter
+  var path = (typeof data.attributes.path !== 'undefined') ? file.base + data.attributes.path : file.path.replace(/\.md$/, '.html');
+  var template;               // Mustache template (NOT template path)
+  var tocTemp;                // Temporary ToC data, if required
+  var view = data.attributes; // Set view data to that in file's front-matter
+
+  // Set special local options from front matter
+  localOptions.template = _.get(data, 'attributes.template', 'default');
+  localOptions.toc = _.get(data, 'attributes.toc', true);
+
+  // Convert markdown to HTML
+  view.body = renderMarkdown(data.body);
+
+  // Update the Markdown links to their HTML equivalent
+  if (options.updateLinks !== false) {
+    view.body = updateLinks(view.body);
+  }
+
+  // Add a ToC, if required
+  if (options.toc !== false) {
+    if (localOptions.toc !== false) {
+      // Get to ToC HTML
+      tocTemp = renderToc(view.body, options.toc);
+
+      // Set the appropriate view properties to the corresponding ToC HTML
+      view.body = tocTemp.body;
+      view.toc = tocTemp.toc;
+    } else {
+      delete view.toc;  // Remove the toc property from the view data
+    }
+  }
+
+  // Read the template
+  template = loadTemplate(options.templatePath + localOptions.template + '.mustache');
+
+  if (!template) {
+    gutil.log(PLUGIN_NAME + ': unable to locate \'' + localOptions.template + '\' template for \'' + file.relative + '\', skipping...');
+    return null;
+  }
+
+  // Compile the template
+  html = mustache.render(template, view, options.partials);
+
+  // Set the path and contents
+  file.path = path;
+  file.contents = new Buffer(html);
+
+  return file;
+};
+
+
 var gulpMarkedMustache = function (options) {
-  // Initialise options
   options = _.merge({}, markedMustacheDefaults, options);
 
   return through.obj(function(file, enc, cb) {
-    var data = fm(String(file.contents));
-    var html;
-    var localOptions = {}; // Per file options passed through front matter
-    var path = (typeof data.attributes.path !== 'undefined') ? file.base + data.attributes.path : file.path.replace(/\.md$/, '.html');
-    var template;               // Mustache template (NOT template path)
-    var tocTemp;                // Temporary ToC data, if required
-    var view = data.attributes; // Set view data to that in file's front-matter
-
-    // Set special local options from front matter
-    localOptions.template = _.get(data, 'attributes.template', 'default');
-    localOptions.toc = _.get(data, 'attributes.toc', true);
-
-    // Convert markdown to HTML
-    view.body = renderMarkdown(data.body);
-
-    // Update the Markdown links to their HTML equivalent
-    if (options.updateLinks !== false) {
-      view.body = updateLinks(view.body);
-    }
-
-    // Add a ToC, if required
-    if (options.toc !== false) {
-      if (localOptions.toc !== false) {
-        // Get to ToC HTML
-        tocTemp = renderToc(view.body, options.toc);
-
-        // Set the appropriate view properties to the corresponding ToC HTML
-        view.body = tocTemp.body;
-        view.toc = tocTemp.toc;
-      } else {
-        delete view.toc;  // Remove the toc property from the view data
+    if (file.isStream()) {
+      cb(new gutil.PluginError(PLUGIN_NAME, 'Streaming not supported'));
+      return;
+    } else if (file.isBuffer()) {
+      file = processBuffer(file, options);
+      if (!file) {
+        cb();
+        return;
       }
     }
-
-    // Read the template
-    template = loadTemplate(options.templatePath + localOptions.template + '.mustache');
-
-    if (!template) {
-      gutil.log('gulp-marked-mustache: unable to locate \'' + localOptions.template + '\' template for \'' + file.relative + '\', skipping...');
-      cb();
-      return;
-    }
-
-    // Compile the template
-    html = mustache.render(template, view, options.partials);
-
-    // Set the path and contents
-    file.path = path;
-    file.contents = new Buffer(html);
 
     cb(null, file);
   });
