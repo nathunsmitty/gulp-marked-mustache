@@ -5,46 +5,20 @@ var _ = require('lodash');
 var fm = require('front-matter');   // Extract data from markdown front-matter
 var fs = require('fs');             // Read files
 var gutil = require('gulp-util');   // Plugin helpers
-var hljs = require('highlight.js'); // Syntax highlighting
 var marked = require('marked');     // Convert Markdown to HTML convert
 var mustache = require('mustache'); // Convert Jade templates to HTML
 var through = require('through2');  // Wrapper for stream
 var toc = require('toc');           // Generate a ToC, if required
 
-var markdownDefaults = {
-  highlight: function(code, lang) {
-    if (typeof lang !== 'undefined') {
-      code = hljs.highlight(lang, code).value;
-    }
-    return code;
-  },
-  langPrefix: 'hljs '
-};
+var markdownDefaults = require('./defaults/marked');
+var markedMustacheDefaults = require('./defaults');
+var tocDefaults = require('./defaults/toc');
 
-var markedMustacheDefaults = {
-  templatePath: './templates/'
-};
-
-var tocDefaults = {
-  headers: /<h(\d)(\s*[^>]*[^>]*)>(?!TL\;DR)([\s\S]+?)<\/h\1>/gi,  // Exlcude headings called 'TL;DR'
-  header: '<h<%= level %><%= attrs %> id="<%= anchor %>"><%= header %></h<%= level %>>',
-  openLI: '<li><a href="#<%= anchor %>"><%= text %></a>',
-  openUL: '<ul>',
-  TOC: '<%= toc %>',
-  tocMax: 3
-};
 
 // Render markdown. Applies different defaults to standard marked.
 var renderMarkdown = function (markdown, options) {
   // Merge defaults with user options
   options = _.merge({}, markdownDefaults, options);
-
-  options.renderer = new marked.Renderer();
-
-  // Override marked settings so IDs aren't added to headings
-  options.renderer.heading = function (text, level) {
-    return '<h' + level + '>' + text + '</h' + level + '>\n';
-  };
 
   // Return the processed markdown
   return marked(markdown, options);
@@ -70,6 +44,7 @@ var renderToc = function (html, options) {
   return output;
 };
 
+// Load a mustache template
 var loadTemplate = function (template) {
   try {
     return fs.readFileSync(template, 'utf-8');
