@@ -24,9 +24,14 @@
     "lodash": "^4.17.2",
     "marked": "^0.3.5",
     "mustache": "^2.2.0",
+    "rehype-stringify": "6.0.1",
+    "remark-html": "10.0.0",
+    "remark-parse": "7.0.2",
+    "remark-rehype": "5.0.0",
     "replace-ext": "^1.0.0",
     "through2": "^2.0.0",
-    "toc": "^0.4.0"
+    "toc": "^0.4.0",
+    "unified": "8.4.2"
   },
   "devDependencies": {
     "eslint": "^3.11.1",

@@ -15,22 +15,36 @@ var toc = require('toc');
 var markdownDefaults = require('./defaults/marked');
 var markedMustacheDefaults = require('./defaults');
 var tocDefaults = require('./defaults/toc');
+var unified = require('unified');
+var markdown = require('remark-parse');
+var remark2rehype = require('remark-rehype');
+var html = require('rehype-stringify');
 
 var PLUGIN_NAME = 'gulp-marked-mustache';
 
 // Render markdown. Applies different defaults to standard marked.
-var renderMarkdown = function (markdown, options) {
+var renderMarkdown = function(input, options) {
   // Merge defaults with user options
   options = _.merge({}, markdownDefaults, options);
 
+  var renderedHTML = unified()
+  .use(markdown, {footnotes: true})
+  .use(remark2rehype)
+  .use(html)
+    .processSync(input).toString();
+
   // Return the processed markdown
-  return marked(markdown, options);
+  return renderedHTML;
 };
 
-
 // Update links to markdown files with their HTML equivalent
-var updateLinks = function (html) {
-  return html.replace(/href=\"(.+?)(\.md)([\?\#].+?)?\"/g, function (match, path, extension, queryFragment) {
+var updateLinks = function(html) {
+  return html.replace(/href=\"(.+?)(\.md)([\?\#].+?)?\"/g, function(
+    match,
+    path,
+    extension,
+    queryFragment
+  ) {
     // If there is no query string or fragment, set the variable
     // to a zero-length string
     if (typeof queryFragment === 'undefined') {
@@ -38,7 +52,7 @@ var updateLinks = function (html) {
     }
 
     // Don't update the link if it includes a protocol
-    if ((/^(\w+\:)?\/\//).test(path)) {
+    if (/^(\w+\:)?\/\//.test(path)) {
       return match;
     } else {
       return 'href="' + path + '.html' + queryFragment + '"';
@@ -46,9 +60,8 @@ var updateLinks = function (html) {
   });
 };
 
-
 // Render a Table of Contents. Returns processed HTML and ToC.
-var renderToc = function (html, options) {
+var renderToc = function(html, options) {
   var data;
   var output = {};
 
@@ -67,9 +80,8 @@ var renderToc = function (html, options) {
   return output;
 };
 
-
 // Load a mustache template
-var loadTemplate = function (template) {
+var loadTemplate = function(template) {
   try {
     return fs.readFileSync(template, 'utf-8');
   } catch (err) {
@@ -78,22 +90,21 @@ var loadTemplate = function (template) {
   }
 };
 
-
 // Process the file
-var processBuffer = function (file, options) {
+var processBuffer = function(file, options) {
   var data = fm(String(file.contents));
   var filePath;
   var html;
   var localOptions = {}; // Per file options passed through front matter
-  var template;               // Mustache template (NOT template path)
-  var tocTemp;                // Temporary ToC data, if required
+  var template; // Mustache template (NOT template path)
+  var tocTemp; // Temporary ToC data, if required
   var view = data.attributes; // Set view data to that in file's front-matter
 
   if ('path' in file) {
-    filePath = (typeof data.attributes.path !== 'undefined')
-      ? file.base + data.attributes.path
-      : replaceExt(file.path, '.html')
-    ;
+    filePath =
+      typeof data.attributes.path !== 'undefined'
+        ? file.base + data.attributes.path
+        : replaceExt(file.path, '.html');
   }
 
   // Set special local options from front matter
@@ -118,15 +129,24 @@ var processBuffer = function (file, options) {
       view.body = tocTemp.body;
       view.toc = tocTemp.toc;
     } else {
-      delete view.toc;  // Remove the toc property from the view data
+      delete view.toc; // Remove the toc property from the view data
     }
   }
 
   // Read the template
-  template = loadTemplate(path.resolve(options.templatePath, localOptions.template + '.mustache'));
+  template = loadTemplate(
+    path.resolve(options.templatePath, localOptions.template + '.mustache')
+  );
 
   if (!template) {
-    gutil.log(PLUGIN_NAME + ': unable to locate \'' + localOptions.template + '\' template for \'' + file.relative + '\', skipping...');
+    gutil.log(
+      PLUGIN_NAME +
+        ': unable to locate \'' +
+        localOptions.template +
+        '\' template for \'' +
+        file.relative +
+        '\', skipping...'
+    );
     return null;
   }
 
@@ -143,8 +163,7 @@ var processBuffer = function (file, options) {
   return file;
 };
 
-
-var gulpMarkedMustache = function (options) {
+var gulpMarkedMustache = function(options) {
   options = _.merge({}, markedMustacheDefaults, options);
 
   return through.obj(function(file, enc, cb) {
@@ -162,6 +181,5 @@ var gulpMarkedMustache = function (options) {
     cb(null, file);
   });
 };
-
 
 module.exports = gulpMarkedMustache;
