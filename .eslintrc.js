@@ -1,28 +1,7 @@
 module.exports = {
   env: {
-    node: true
+    node: true,
+    es6: true,
   },
-  extends: 'eslint:recommended',
-  rules: {
-    indent: [
-      'error',
-      2
-    ],
-    'linebreak-style': [
-      'error',
-      'unix'
-    ],
-    quotes: [
-      'error',
-      'single'
-    ],
-    'quote-props': [
-      'error',
-      'as-needed'
-    ],
-    semi: [
-      'error',
-      'always'
-    ]
-  }
-};
+  extends: ['eslint:recommended', 'prettier'],
+}
