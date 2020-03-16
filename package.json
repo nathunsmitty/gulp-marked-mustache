@@ -24,6 +24,7 @@
     "lodash": "^4.17.2",
     "marked": "^0.3.5",
     "mustache": "^2.2.0",
+    "rehype-raw": "4.0.1",
     "rehype-stringify": "6.0.1",
     "remark-html": "10.0.0",
     "remark-parse": "7.0.2",

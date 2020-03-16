@@ -5,7 +5,6 @@ var _ = require('lodash');
 var fm = require('front-matter');
 var fs = require('fs');
 var gutil = require('gulp-util');
-var marked = require('marked');
 var mustache = require('mustache');
 var path = require('path');
 var replaceExt = require('replace-ext');
@@ -18,7 +17,8 @@ var tocDefaults = require('./defaults/toc');
 var unified = require('unified');
 var markdown = require('remark-parse');
 var remark2rehype = require('remark-rehype');
-var html = require('rehype-stringify');
+var stringify = require('rehype-stringify');
+var raw = require('rehype-raw');
 
 var PLUGIN_NAME = 'gulp-marked-mustache';
 
@@ -28,9 +28,10 @@ var renderMarkdown = function(input, options) {
   options = _.merge({}, markdownDefaults, options);
 
   var renderedHTML = unified()
-  .use(markdown, {footnotes: true})
-  .use(remark2rehype)
-  .use(html)
+    .use(markdown, {footnotes: true, pedantic: true, commonmark: true, gfm: true})
+    .use(remark2rehype, {allowDangerousHTML: true})
+    .use(raw)
+    .use(stringify)
     .processSync(input).toString();
 
   // Return the processed markdown
