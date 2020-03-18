@@ -105,7 +105,7 @@ var processBuffer = function(file, options) {
   var localOptions = {} // Per file options passed through front matter
   var template // Mustache template (NOT template path)
   var tocTemp // Temporary ToC data, if required
-  var view = data.attributes // Set view data to that in file's front-matter
+  var view = _.merge(options.view, data.attributes) // Set view data to that in file's front-matter
 
   if ('path' in file) {
     filePath =
